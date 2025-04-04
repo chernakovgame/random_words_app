@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Рандомные слова и треки</title>
+</head>
+<body>
+  <h1>Загрузка...</h1>
+  <script>
+    let words = {};
+    async function loadWords() {
+      const res = await fetch('https://raw.githubusercontent.com/chernakovgame/frist/main/words_full.json');
+      words = await res.json();
+      document.body.innerHTML = '<h2>Слова загружены!</h2>';
+    }
+    loadWords();
+  </script>
+  <audio controls src="audio/pozitive.mp3"></audio>
+</body>
+</html>

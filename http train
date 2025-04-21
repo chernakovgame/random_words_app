@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Random Words and Tracks</title>
+  <style>
+    /* Импорт шрифтов из Google Fonts — обязательно в начале блока */
+    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Poiret+One&family=Unbounded:wght@400;700&display=swap');
+
+    html, body {
+      background-color: #f5f3ef !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Основной контейнер блока */
+    #randomWordsAndTracks {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f5f3ef;
+      background-image: url('https://www.transparenttextures.com/patterns/cardboard-flat.png');
+      padding-top: 30px;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .hidden { 
+      display: none; 
+    }
+
+    #randomWordsAndTracks h2 {
+      font-family: 'Comfortaa', cursive;
+      font-size: 20px;
+      color: black;
+      margin: 10px 0 0;
+    }
+
+    #randomWordsAndTracks select {
+      font-family: 'Poiret One', cursive;
+      font-size: 13px;
+      padding: 8px 10px;
+      margin: 0;
+      border-radius: 16px;
+      border: 2px solid #ccc;
+      background-color: rgba(255, 255, 255, 0.85);
+      color: #333;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+
+    @keyframes countdownPulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.9; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    #words {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 50px;
+      font-weight: bold;
+      color: red;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70px;
+      margin-top: 100px;
+      margin-bottom: 100px;
+    }
+
+    .fade-word {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .vinyl-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 250px;
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    #wordCountBlock {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 32px;
+      font-weight: bold;
+      color: red;
+      text-align: center;
+      margin-bottom: 1px;
+      opacity: 0;
+      transform: translateY(-50px);
+      transition: all 0.5s ease;
+      position: absolute;
+      top: 0;
+    }
+
+    .show-counter #wordCountBlock {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #wordCountLabelTop,
+    #wordCountLabelBottom {
+      font-family: 'Poiret One', cursive;
+      font-size: 16px;
+      color: #333;
+      margin: 2px 0;
+    }
+
+    .vinyl-button {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #333 0%, #000 80%);
+      border: 5px solid #444;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.6s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .vinyl-button.playing {
+      transform: translateY(75px);
+    }
+
+    .vinyl-center {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: green;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .vinyl-button.playing .vinyl-center {
+      background: red;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    .spin {
+      animation: spin 2s linear infinite;
+    }
+
+    /* Стиль блока доната */
+    #donateBlock {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: -30px; /* исходный отступ */
+      transition: opacity 0.6s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    .donate-text {
+      font-family: 'Poiret One', cursive;
+      font-size: 15px;
+      color: black;
+    }
+
+    /* Кнопка отправки доната с расширенной кликабельной областью */
+    .donate-button {
+      background-color: #c0392b;
+      color: white;
+      font-family: 'Poiret One', cursive;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 15px;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-block;
+      transition: background 0.3s;
+      position: relative;
+    }
+
+    /* Псевдоэлемент, расширяющий область клика на 10px сверху */
+    .donate-button::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: transparent;
+    }
+
+    .donate-button:hover {
+      background-color: #e74c3c;
+    }
+
+    .donate-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .donate-visible {
+      opacity: 1;
+    }
+
+    /* Переключатель полноэкранного режима в стиле iOS */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-top: 10px;
+    }
+
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #66bb6a;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    input:disabled + .slider {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Полноэкранный режим: скрываем все элементы внутри #randomWordsContent, кроме блока с id "words" */
+    #randomWordsAndTracks.fullscreen #randomWordsContent > *:not(#words) {
+      display: none;
+    }
+
+    /* В полноэкранном режиме увеличиваем шрифт до 150px и опускаем блок с рандомными словами */
+    #randomWordsAndTracks.fullscreen #words {
+      display: flex;
+      font-size: 150px;
+      margin-top: calc(20vh + 150px);
+    }
+
+    /* Media queries для адаптивности */
+    @media (max-width: 600px) {
+      #randomWordsAndTracks h2 {
+        font-size: 16px;
+      }
+      #randomWordsAndTracks select {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+      /* Для мобильной версии переопределяем стили для полноэкранного режима */
+      #randomWordsAndTracks.fullscreen #words {
+        font-size: 80px;
+        margin-top: calc(20vh + 100px);
+      }
+      #words {
+        font-size: 36px;
+        margin-top: 80px;
+        margin-bottom: 80px;
+      }
+      #wordCountBlock {
+        font-size: 24px;
+      }
+      .vinyl-button {
+        width: 100px;
+        height: 100px;
+      }
+      .vinyl-center {
+        width: 50px;
+        height: 50px;
+        font-size: 12px;
+      }
+      .donate-text {
+        font-size: 13px;
+      }
+      .donate-button {
+        padding: 6px 12px;
+      }
+      /* Скрываем переключатель полноэкранного режима на мобильных устройствах */
+      .switch {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="randomWordsAndTracks">
+    <div id="randomWordsContent">
+      <h2>Выберите категорию слов</h2>
+      <select id="wordCategory">
+        <option value="nouns">Существительные</option>
+        <option value="verbs">Глаголы</option>
+        <option value="adjectives">Прилагательные</option>
+        <option value="mixed">Смешанный стиль</option>
+      </select>
+      
+      <h2>Выберите время смены слов</h2>
+      <select id="timeInterval">
+        <option value="10000">10 секунд</option>
+        <option value="8000">8 секунд</option>
+        <option value="5000">5 секунд</option>
+        <option value="3000">3 секунды</option>
+        <option value="2000">2 секунды</option>
+      </select>
+      
+      <h2>Выберите трек</h2>
+<select id="trackSelect">
+  <option value="pozitive">Позитивный</option>
+  <option value="lyric">Лирический</option>
+  <option value="guf">Гуф</option>
+  <option value="calm">Спокойный</option>
+  <option value="gangsta">Гангстерский</option>
+  <option value="speed">Скоростной</option>
+  <option value="modern">Современный</option>
+  <option value="random">Случайный</option> <!-- ← добавлено -->
+</select>
+      
+      <h2>Количество игроков</h2>
+      <select id="playerCount">
+        <option value="1">1 игрок</option>
+        <option value="2">2 игрока</option>
+      </select>
+      
+      <!-- Блок для обратного отсчёта и случайных слов -->
+      <div id="words" class="hidden"></div>
+      
+      <div class="vinyl-section" id="vinylContainer">
+        <div id="wordCountBlock">
+          <div id="wordCountLabelTop">счётчик слов</div>
+          <div id="wordCount">000</div>
+        </div>
+        <div id="vinyl" class="vinyl-button stopped">
+          <div class="vinyl-center" id="vinylCenter">PLAY</div>
+        </div>
+        <!-- Переключатель полноэкранного режима (iOS-стиль) -->
+        <label class="switch">
+          <input type="checkbox" id="toggleFullscreen">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      
+      <!-- Блок доната: текст не кликабелен, только кнопка с расширенной кликабельной областью -->
+      <div id="donateBlock" class="donate-visible">
+        <span class="donate-text">автор движка Владимир Чернаков</span>
+        <a href="https://yookassa.ru/my/i/Z-63AZms9bnO/l" target="_blank" class="donate-button">
+          отправить донат
+        </a>
+      </div>
+      
+      <audio id="clickSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_b72b8fd94b.mp3" preload="auto"></audio>
+    </div>
+  </div>
+
+  <script>
+    // Функции для запроса и выхода из полноэкранного режима с учётом префиксов
+    function requestFullscreen(element) {
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) { // Safari
+        element.webkitRequestFullscreen();
+      } else if (element.msRequestFullscreen) { // IE11
+        element.msRequestFullscreen();
+      }
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { // Safari
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { // IE11
+        document.msExitFullscreen();
+      }
+    }
+
+    (function(){
+      let wordInterval;
+      let countdownTimer;
+      let wordCounter = 0;
+      let isPlaying = false;
+      let audio;
+      let words = {};
+
+      async function loadWords() {
+        try {
+          const [nouns, verbs, adjectives] = await Promise.all([
+            fetch('https://random-words-app.vercel.app/nouns.json').then(r => r.json()),
+            fetch('https://random-words-app.vercel.app/verbs.json').then(r => r.json()),
+            fetch('https://random-words-app.vercel.app/adjectives.json').then(r => r.json())
+          ]);
+          words = { nouns, verbs, adjectives };
+        } catch (e) {
+          console.error('Ошибка загрузки слов:', e);
+        }
+      }
+
+      function getRandomWord(category) {
+        const list = category === 'mixed'
+          ? [...words.nouns, ...words.verbs, ...words.adjectives]
+          : words[category];
+        return list[Math.floor(Math.random() * list.length)];
+      }
+
+      function updateWordCount() {
+        wordCounter++;
+        document.getElementById('wordCount').innerText = wordCounter.toString().padStart(3, '0');
+      }
+
+      function startWords(category, interval, playerCount) {
+        const wordsDiv = document.getElementById('words');
+        let chosenColor = 'red';
+        if (playerCount === "2") {
+          chosenColor = Math.random() < 0.5 ? 'red' : 'green';
+        }
+        wordsDiv.style.color = chosenColor;
+        wordsDiv.classList.remove('hidden');
+        wordsDiv.innerHTML = `<span class="fade-word">${getRandomWord(category)}</span>`;
+        updateWordCount();
+
+        wordInterval = setInterval(() => {
+          let chosenColor = 'red';
+          if (playerCount === "2") {
+            chosenColor = Math.random() < 0.5 ? 'red' : 'green';
+          }
+          wordsDiv.style.color = chosenColor;
+          wordsDiv.innerHTML = `<span class="fade-word">${getRandomWord(category)}</span>`;
+          updateWordCount();
+        }, interval);
+      }
+
+      // Функция для остановки игры и восстановления меню
+      function stopGame() {
+        const vinyl = document.getElementById('vinyl');
+        const center = document.getElementById('vinylCenter');
+        const vinylContainer = document.getElementById('vinylContainer');
+        const donateBlock = document.getElementById('donateBlock');
+        const wordsDiv = document.getElementById('words');
+        const fullscreenToggle = document.getElementById('toggleFullscreen');
+        clearInterval(wordInterval);
+        clearInterval(countdownTimer);
+        if (audio) audio.pause();
+        wordsDiv.classList.add('hidden');
+        wordsDiv.innerText = '';
+        vinyl.classList.remove('playing');
+        center.classList.remove('spin');
+        center.textContent = 'PLAY';
+        vinylContainer.classList.remove('show-counter');
+        fullscreenToggle.disabled = false;
+        isPlaying = false;
+        // Разблокировать ориентацию при выходе из полноэкранного режима
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+        // Если полноэкранный режим активен, выйти из него
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+          exitFullscreen();
+        }
+        document.getElementById('randomWordsAndTracks').classList.remove('fullscreen');
+        // Плавно показываем блок доната при остановке игры
+        donateBlock.classList.remove('donate-hidden');
+        donateBlock.classList.add('donate-visible');
+      }
+
+      // Обработчик переключателя – меняет только визуальное состояние
+      document.getElementById('toggleFullscreen').addEventListener('change', function() {
+        if (!isPlaying) {
+          // Просто меняется внешний вид переключателя.
+        } else {
+          // Если игра запущена, не даём менять состояние переключателя.
+          this.checked = !this.checked;
+        }
+      });
+
+      document.getElementById('vinyl').addEventListener('click', () => {
+        const vinyl = document.getElementById('vinyl');
+        const center = document.getElementById('vinylCenter');
+        const vinylContainer = document.getElementById('vinylContainer');
+        const clickSound = document.getElementById('clickSound');
+        const donateBlock = document.getElementById('donateBlock');
+        const wordsDiv = document.getElementById('words');
+        const fullscreenToggle = document.getElementById('toggleFullscreen');
+        const mainContainer = document.getElementById('randomWordsAndTracks');
+
+        clickSound.currentTime = 0;
+        clickSound.play();
+
+        if (isPlaying) {
+          stopGame();
+          return;
+        }
+
+        // Запуск игры
+        fullscreenToggle.disabled = true;
+        isPlaying = true;
+        wordCounter = 0;
+        document.getElementById('wordCount').innerText = '000';
+        vinylContainer.classList.add('show-counter');
+        // Плавно скрываем блок доната при запуске игры
+        donateBlock.classList.remove('donate-visible');
+        donateBlock.classList.add('donate-hidden');
+
+        // Если переключатель включён, запускаем полноэкранный режим
+        if (fullscreenToggle.checked) {
+          requestFullscreen(document.documentElement);
+          mainContainer.classList.add('fullscreen');
+          // Пытаемся заблокировать ориентацию в ландшафтный режим
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(err => console.error(err));
+          }
+        }
+
+        const category = document.getElementById('wordCategory').value;
+        const interval = parseInt(document.getElementById('timeInterval').value);
+        const track = document.getElementById('trackSelect').value;
+        const playerCount = document.getElementById('playerCount').value;
+
+        const tracks = {
+  pozitive: 'https://random-words-app.vercel.app/Pozitive.mp3',
+  lyric: 'https://random-words-app.vercel.app/Lyric.mp3',
+  guf: 'https://random-words-app.vercel.app/Guf.mp3',
+  calm: 'https://random-words-app.vercel.app/Spokoynyi.mp3',
+  gangsta: 'https://random-words-app.vercel.app/Gangsta.mp3',
+  speed: 'https://random-words-app.vercel.app/SPEED.mp3',
+  modern: 'https://random-words-app.vercel.app/GOBEAT.mp3'
+};
+
+const randomTracks = [
+  'https://random-words-app.vercel.app/01.mp3',
+  'https://random-words-app.vercel.app/02.mp3',
+  'https://random-words-app.vercel.app/03.mp3',
+  'https://random-words-app.vercel.app/04.mp3',
+  'https://random-words-app.vercel.app/05.mp3',
+  'https://random-words-app.vercel.app/06.mp3',
+  'https://random-words-app.vercel.app/07.mp3',
+  'https://random-words-app.vercel.app/08.mp3',
+  'https://random-words-app.vercel.app/09.mp3',
+  'https://random-words-app.vercel.app/10.mp3'
+];
+
+let audioSrc = track === "random"
+  ? randomTracks[Math.floor(Math.random() * randomTracks.length)]
+  : tracks[track];
+
+audio = new Audio(audioSrc);
+        audio.play();
+
+        vinyl.classList.add('playing');
+        center.classList.add('spin');
+        center.textContent = 'STOP';
+
+        wordsDiv.classList.remove('hidden');
+        wordsDiv.style.color = 'green';
+
+        let countdown = 10;
+        wordsDiv.style.animation = 'none';
+        wordsDiv.innerText = "загружаю";
+
+        countdownTimer = setInterval(() => {
+          if (countdown === 10 || countdown === 9) {
+            wordsDiv.style.animation = 'none';
+            wordsDiv.innerText = "загружаю";
+          } else if (countdown === 8 || countdown === 7) {
+            wordsDiv.style.animation = 'none';
+            wordsDiv.innerText = "музыку";
+          } else if (countdown === 6 || countdown === 5) {
+            wordsDiv.style.animation = 'none';
+            wordsDiv.innerText = "слова";
+          } else if (countdown >= 0) {
+            wordsDiv.style.animation = 'none';
+            void wordsDiv.offsetWidth;
+            wordsDiv.style.animation = 'countdownPulse 0.6s ease';
+            wordsDiv.innerText = countdown;
+          }
+          countdown--;
+          if (countdown < 0) {
+            clearInterval(countdownTimer);
+            setTimeout(() => {
+              wordsDiv.innerText = '';
+              startWords(category, interval, playerCount);
+            }, 1000);
+          }
+        }, 1000);
+      });
+
+      // Обработчик события выхода из полноэкранного режима
+      document.addEventListener("fullscreenchange", () => {
+        if (!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement)) {
+          const mainContainer = document.getElementById('randomWordsAndTracks');
+          mainContainer.classList.remove('fullscreen');
+          // Если игра запущена, останавливаем её и возвращаем меню
+          if (isPlaying) {
+            stopGame();
+          }
+        }
+      });
+
+      window.addEventListener('load', loadWords);
+    })();
+  </script>
+</body>
+</html>
